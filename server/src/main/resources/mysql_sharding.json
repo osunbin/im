@@ -1,0 +1,25 @@
+{
+  "sharding": [
+    {
+      "business": 252282053326857089,
+      "node": {
+        "name": "im_online_msg",
+        "sum": 4,
+        "subcount": 1,
+        "split": "dst_uid"
+      },
+      "database": {
+        "name": "dbcom_amonlinemsg",
+        "sum": 4,
+        "subcount": 32,
+        "split": "dst_uid",
+        "samename": true
+      },
+      "table": {
+        "name": "t_user_online_msg",
+        "sum": 128,
+        "split": "dst_uid"
+      }
+    }
+  ]
+}

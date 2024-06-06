@@ -1,0 +1,4970 @@
+<requests>
+
+ <sharding ID="100">
+    <business code="101" />
+    <instance name="nxim_online_msg" sum="4" subcount="1" split="dst_uid" />  <!-- sum 必须大于 1 -->
+    <database name="dbwwwnxcom_amonlinemsg" sum="4" subcount="32" split="dst_uid" samename="1" />
+    <table name="t_user_online_msg" sum="128" split="dst_uid" />
+ </sharding>
+
+  <request ID="1">
+    <reqNo value="0x0002400C"/>
+    <instance value="nxim_system_msg"/>
+    <db value="dbnx_nxim_sysmsg"/>
+    <table value="t_user_system_msg_content"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="msgid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="begints"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="endts"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="msg_str" />
+          <type value="7"/>
+        </column>   
+        <column>
+          <name value="msg_len" />
+          <type value="3"/>
+        </column>   
+        <column>
+          <name value="begints" />
+          <type value="3"/>
+        </column>   
+        <column>
+          <name value="endts" />
+          <type value="3"/>
+        </column>   
+      </queryresult>
+    </op>
+  </request>
+
+
+  <request ID="2">
+    <reqNo value="0x00014014"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/>
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <request ID="3">
+    <reqNo value="0x00014011"/>
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>    
+        </column> 
+        <column>
+          <name value="from_uid"/>
+          <rel value="1"/>   
+        </column> 
+        <column>
+          <name value="status"/>
+          <rel value="1"/>     
+        </column> 
+        <column>
+          <name value="timestamp"/>
+        </column> 
+      </condition>
+      <queryresult>
+        <column>
+          <name value="count(*)" />
+          <type value="3" />     
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+  <request ID="4">
+    <reqNo value="0x00014012"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="3">  <!-- update-->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <rel value="1"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="unread_count"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!--获取用户全部未读消息计数 -->
+  <request ID="5">
+    <reqNo value="0x0001400E"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="unread_count"/>
+        </column>  
+      </condition>
+      <queryresult>
+        <column>
+           <name value="uidB" />
+           <type value="4" />
+        </column>
+        <column>
+          <name value="unread_count" />
+          <type value="3" />        
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+<!-- 删除一条个人私信消息(丢弃) -->
+  <request ID="6">
+    <reqNo value="0x0001400F"/>
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="4">  <!-- delete -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="src_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="msg_id"/>
+        </column>
+      </condition>
+    </op>
+  </request>
+
+
+<!-- 删除私信消息(丢弃) -->
+  <request ID="7">
+    <reqNo value="0x0001400D"/>
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="4">  <!-- delete -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="src_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+        </column>
+      </condition>
+    </op>
+  </request>
+
+  <!-- 清空未读消息计数 -->
+  <request ID="8">
+    <reqNo value="0x00014010"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="3">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="unread_count"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <request ID="9">
+    <reqNo value="0x00014013"/>  <!-- ABS_DAS_DELETE_CONTACTS  -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="3">  <!-- delete -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="is_del"/>
+        <column name="unread_count"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!-- 丢弃 -->
+  <request ID="10">
+    <reqNo value="0x0000E083"/>
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="3">  <!-- update -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+        </column> 
+        <column>
+          <name value="msg_id"/>
+          <rel value="1"/> 
+        </column> 
+        <column>
+          <name value="timestamp"/>
+        </column> 
+     </condition>
+     <updatevalue>
+       <column name="status"/>  
+     </updatevalue>
+    </op>
+  </request>
+
+<!-- 拉取离线消息 -->
+  <request ID="11">
+    <reqNo value="0x00014015"/>
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="msg_id"/>
+          <rel value="1"/>    
+        </column>  
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>    
+        </column> 
+        <column>
+          <name value="from_uid"/>
+          <rel value="1"/>    
+        </column> 
+        <column>
+          <name value="status"/>
+        </column> 
+      </condition>
+      <queryresult>
+        <column>
+          <name value="msg_id" />
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id" />
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="src_uid" />
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="msg_type" />
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp" />
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="msg_len" />
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_str" />
+          <type value="7"/>
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+  <!-- 插入广播系统消息表  -->
+  <request ID="12">
+    <reqNo value="0x00014001"/>
+    <instance value="nxim_system_msg"/>
+    <db value="dbnx_nxim_sysmsg"/>
+    <table value="t_user_system_msg"/>
+    <splitcolumn value="touid"/> 
+    <splitvalue value="128"/>  <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <!--><splitcolumn value="touid"/>
+    <!--><splitvalue value="32"/>  <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="2">   <!-- insert -->
+      <insertvalue>
+        <column name="fromuid"/>
+        <column name="touid"/>
+        <column name="msgid"/>
+        <column name="timestamp"/>
+      </insertvalue>
+    </op>
+  </request>
+
+  <!--删除广播系统消息-->
+  <request ID="13">
+    <reqNo value="0x00014002"/>
+    <instance value="nxim_system_msg"/>
+    <db value="dbnx_nxim_sysmsg"/>
+    <table value="t_user_system_msg"/>
+    <splitcolumn value="touid"/> 
+    <splitvalue value="128"/>  <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="4">  <!-- delete -->
+      <condition>
+        <column>
+          <name value="fromuid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="touid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="msgid"/>
+        </column>
+      </condition>
+    </op>
+  </request>
+
+  <!--查询广播系统消息内容-->
+  <request ID="14">
+    <reqNo value="0x00014003"/>
+    <instance value="nxim_system_msg"/>
+    <db value="dbnx_nxim_sysmsg"/>
+    <table value="t_user_system_msg_content"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="msgid"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="msgid" />
+          <type value="4"/>
+        </column>   
+        <column>
+          <name value="msg_len" />
+          <type value="3"/>
+        </column>   
+        <column>
+          <name value="msg_str" />
+          <type value="7"/>
+        </column>   
+        <column>
+          <name value="begints" />
+          <type value="3"/>
+        </column>   
+        <column>
+          <name value="endts" />
+          <type value="3"/>
+        </column>   
+      </queryresult>
+    </op>
+  </request>
+  
+  <!--查询广播系统消息-->
+  <request ID="15">
+    <reqNo value="0x0001401A"/>
+    <instance value="nxim_system_msg"/>
+    <db value="dbnx_nxim_sysmsg"/>
+    <table value="t_user_system_msg"/>
+    <splitcolumn value="touid"/> 
+    <splitvalue value="128"/>  <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="touid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="fromuid" />
+          <type value="4"/>
+        </column>   
+        <column>
+          <name value="touid" />
+          <type value="4"/>
+        </column>   
+        <column>
+          <name value="msgid" />
+          <type value="4"/>
+        </column>   
+      </queryresult>
+    </op>
+  </request>
+
+  <!--查询广播系统消息内容-->
+  <request ID="16">
+    <reqNo value="0x0001400C"/>
+    <instance value="nxim_system_msg"/>
+    <db value="dbnx_nxim_sysmsg"/>
+    <table value="t_user_system_msg_content"/>
+    <op value="1">  <!-- query -->
+    	<IdColumn value="msgid"/>  <!-- msg_type 批量查询 -->
+      <queryresult>
+      	<column>
+          <name value="msgid" />
+          <type value="4"/>
+        </column> 
+      	<column>
+          <name value="msg_len" />
+          <type value="3"/>
+        </column>  
+        <column>
+          <name value="msg_str" />
+          <type value="7"/>
+        </column>   
+      </queryresult>
+    </op>
+  </request>
+
+  <!--查询登录位图信息-->
+  <request ID="17">
+    <reqNo value="0x00014004"/>
+    <instance value="nxim_loginbmp"/>
+    <db value="dbnx_nxim_loginbmp"/>
+    <table value="t_user_login_bmp"/>
+    <splitcolumn value="uid"/> 
+    <splitvalue value="128"/> <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uid"/>
+          <rel value="1"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="login_bmp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="login_day"/>
+          <type value="3"/>
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+  <!--更新用户登录位图-->
+  <request ID="18">
+    <reqNo value="0x00014005"/>
+    <instance value="nxim_loginbmp"/>
+    <db value="dbnx_nxim_loginbmp"/>
+    <table value="t_user_login_bmp"/>
+    <splitcolumn value="uid"/> 
+    <splitvalue value="128"/> <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="5">   <!-- upsert -->
+      <insertvalue>
+        <column name="uid"/>
+        <column name="login_bmp"/>
+        <column name="login_day"/>
+      </insertvalue>
+      <updatevalue>
+        <column name="login_bmp"/>
+        <column name="login_day"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!--更新用户登录数据-->
+  <request ID="19">
+    <reqNo value="0x00014006"/>
+    <instance value="nxim_login_data"/>
+    <db value="dbnx_nxim_user"/>
+    <table value="t_user_login"/>
+    <splitcolumn value="uid"/> 
+    <splitvalue value="128"/> <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="5">   <!-- upsert -->
+      <insertvalue>
+        <column name="uid"/>
+        <column name="login_time"/>
+        <column name="logout_time"/>
+        <column name="ip"/>
+        <column name="source_type"/>
+      </insertvalue>
+      <updatevalue>
+        <column name="login_time"/>
+        <column name="logout_time"/>
+        <column name="ip"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!--更新用户登出数据-->
+  <request ID="20">
+    <reqNo value="0x00014007"/>
+    <instance value="nxim_login_data"/>
+    <db value="dbnx_nxim_user"/>
+    <table value="t_user_login"/>
+    <splitcolumn value="uid"/> 
+    <splitvalue value="128"/> <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="3">   <!-- update -->
+      <condition>
+        <column>
+          <name value="uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="source_type"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="logout_time"/>
+      </updatevalue>
+    </op>
+  </request>
+
+<request ID="21">                                                                
+    <reqNo value="0x00014009"/>
+    <instance value="bbim_dtsvr"/>
+    <db value="dbwwwnxcom_im_msg"/>
+    <table value="t_dts_qcloud_logic"/>
+    <op value="2">   <!-- insert complain -->
+      <insertvalue>
+        <column name="des_uid"/>
+        <column name="send_uid"/>
+        <column name="md5"/>
+        <column name="des_type"/>
+        <column name="timestamp"/>
+        <column name="file_url"/>
+        <column name="delete_flag"/>
+      </insertvalue>
+    </op>
+  </request> 
+  
+  <request ID="22">
+    <reqNo value="0x00014019"/>
+    <instance value="bbim_dtsvr"/>
+    <db value="dbwwwnxcom_im_msg"/>
+    <table value="t_dts_qcloud_logic"/>
+    <op value="1">  <!-- query -->
+       <condition>
+          <column>
+              <name value="md5"/>
+              <rel value="1"/>
+          </column>
+       </condition>
+       <queryresult>
+          <column>
+           <name value="file_url"/>
+           <type value="7"/>
+         </column>
+       </queryresult>
+    </op>
+  </request>
+
+  <!--查询广播系统消息-->
+  <request ID="23">
+    <reqNo value="0x0001400B"/>
+    <instance value="nxim_system_msg"/>
+    <db value="dbnx_nxim_sysmsg"/>
+    <table value="t_user_system_msg"/>
+    <splitcolumn value="touid"/> 
+    <splitvalue value="128"/>  <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="touid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="fromuid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+        </column>
+      </condition>
+      <queryresult> 
+        <column>
+          <name value="timestamp" />
+          <type value="4"/>
+        </column>   
+        <column>
+          <name value="msgid" />
+          <type value="4"/>
+        </column>   
+      </queryresult>
+    </op>
+  </request>
+
+ <request ID="24">
+    <reqNo value="0x0001400A"/>    <!--ABS_DAS_QUERY_CLOUD_MSG 拉云消息接口-->
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="src_uid"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="timestamp"/>
+          <rel value="1"/>
+        </column>
+      </condition>
+    <queryresult>
+      <column>
+          <name value="msg_id"/>
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="dst_uid"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="src_uid"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="from_uid"/>
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="timestamp" />
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="msg_len" />
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="msg_str" />
+          <type value="7"/>
+      </column>
+       <column>
+          <name value="uidC" />
+          <type value="4"/>
+      </column>
+    </queryresult>
+    <sort>
+     <column>
+       <name value="timestamp"/>
+       <type value="DESC"/>
+     </column>
+    </sort>    
+    </op>
+  </request>
+
+  <request ID="25">
+    <reqNo value="0x00014017"/>
+    <instance value="nxim_user_device"/>
+    <db value="dbnx_nxim_dev"/>
+    <table value="t_user_dev_token"/>
+    <op value="1">  <!-- query -->
+    <IdColumn value="dev_type"/>  <!-- msg_type 批量查询 -->
+    <condition>
+        <column>
+          <name value="uid"/>
+        </column>
+    </condition>
+      <queryresult>
+      <column>
+        <name value="uid"/>
+        <type value="4"/>
+      </column>
+      <column>
+        <name value="dev_type"/>
+        <type value="3"/>
+      </column>
+      <column>
+        <name value="token_len"/>
+        <type value="3"/>
+      </column>
+      <column>
+        <name value="token"/>
+        <type value="7"/>
+      </column>
+      <column>
+        <name value="version"/>
+        <type value="7"/>
+      </column>
+      <column>
+        <name value="timestamp"/>
+        <type value="4"/>
+      </column>
+      </queryresult>
+      <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="DESC"/>
+        </column>
+      </sort>    
+    </op>
+  </request>
+
+ <!-- 更新离线消息状态 -->
+  <request ID="26">
+    <reqNo value="0x00014018"/>
+    <instance value="nxim_online_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/> 
+    <splitvalue value="128"/>  <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="3">  <!-- update -->
+      <IdColumn value="msg_id"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+        </column> 
+      </condition>
+      <updatevalue>
+        <column name="status"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!--ack时间轮和unreachable使用--> 
+  <request ID="27">
+    <reqNo value="0x0001401B"/>
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="3"> <!--update-->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+        </column> 
+        <column>
+          <name value="client_msg_id"/>
+        </column> 
+      </condition>
+      <updatevalue>
+        <column name="status"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!--更新用户设备信息-->
+  <request ID="28">
+    <reqNo value="0x00014008"/>
+    <instance value="nxim_user_device"/>
+    <db value="dbnx_nxim_dev"/>
+    <table value="t_user_dev_token"/>
+    <op value="5">   <!-- upsert -->
+      <insertvalue>
+        <column name="uid"/>
+        <column name="dev_type"/>
+        <column name="token"/>
+        <column name="token_len"/>
+        <column name="timestamp"/>
+        <column name="version"/>
+      </insertvalue>
+      <updatevalue>
+        <column name="dev_type"/>
+        <column name="token"/>
+        <column name="token_len"/>
+        <column name="timestamp"/>
+        <column name="version"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!--ABS_DAS_GET_CONTACT_LIST 获取联系人列表-->
+  <request ID="29">
+    <reqNo value="0x0001401C"/>
+    <instance value="nxim_user_contact"/>
+    <db value="dbwwwnxcom_im"/>
+    <table value="t_user_contact"/>
+    <!--><splitcolumn value="uidA"/>
+    <!--><splitvalue value="128"/>    <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content" resultkey="DECODE"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <!--ABS_DAS_GET_CONTACT_COUNT 获取联系人数量-->
+  <request ID="30">
+    <reqNo value="0x0001401D"/>
+    <instance value="nxim_user_contact"/>
+    <db value="dbwwwnxcom_im"/>
+    <table value="t_user_contact"/>
+    <!--><splitcolumn value="uidA"/>
+    <!--><splitvalue value="128"/>    <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="count(*)"/>
+          <type value="3"/>
+        </column>
+      </queryresult>
+    </op>
+  </request> 
+
+  <!--ABS_DAS_GET_ONLINE_MSG 获取双向聊天消息-->
+  <request ID="31">
+   <reqNo value="0x0001401CE"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         <name value="src_uid"/>
+       </column>
+     </condition>
+     <queryresult>
+       <column>
+         <name value="from_uid" />
+         <type value="3" />
+       </column>
+       <column>
+         <name value="timestamp" />
+         <type value="34" />
+       </column>
+       <column>
+         <name value="msg_str" resultkey="DECODE" />
+         <type value="7" />
+       </column>
+       <column>
+         <name value="info_id" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="buyer" />
+         <type value="3" />
+       </column>
+     </queryresult>
+   </op>
+   </request>
+ 
+  <!--ABS_DAS_GET_ONLINE_MSG_COUNT 获取双向聊天单项消息数量-->
+  <request ID="32">
+   <reqNo value="0x0001401CF"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         <name value="src_uid"/>
+       </column>
+     </condition>
+     <queryresult>
+       <column>
+         <name value="count(*)" />
+         <type value="3" />
+       </column>
+     </queryresult>
+   </op>
+   </request>
+
+  <!--ABS_DAS_GET_DIRECTION_ONLINE_MSG 获取单项聊天消息-->
+  <request ID="33">
+   <reqNo value="0x00014020"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         <name value="from_uid"/>
+       </column>
+     </condition>
+     <queryresult>
+       <column>
+         <name value="src_uid" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="timestamp" />
+         <type value="34" />
+       </column>
+       <column>
+         <name value="msg_str" resultkey="DECODE" />
+         <type value="7" />
+       </column>
+       <column>
+         <name value="info_id" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="buyer" />
+         <type value="3" />
+       </column>
+     </queryresult>
+   </op>
+   </request>
+ 
+  <!--ABS_DAS_GET_DIRECTION_ONLINE_MSG_COUNT 获取单项聊天单项消息数量-->
+  <request ID="34">
+   <reqNo value="0x00014021"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         <name value="from_uid"/>
+       </column>
+     </condition>
+     <queryresult>
+       <column>
+         <name value="count(*)" />
+         <type value="3" />
+       </column>
+     </queryresult>
+   </op>
+   </request>
+
+  <request ID="35">
+    <reqNo value="0x00014032"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/>
+    <splitvalue value="256"/>  <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+        <name value="uidA"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB" />
+          <type value="4" />
+        </column>
+      </queryresult>
+      <sort>
+        <column>
+          <name value="timestamp"/>
+	        <type value="DESC"/>
+        </column>
+      </sort>
+    </op>
+  </request>
+
+   <request ID="36">
+       <reqNo value="0x00014033"/>
+       <instance value="tidb_nxim_cloud_msg"/>
+       <db value="dbwwwnxcom_amonlinemsg"/>
+       <table value="t_user_online_msg"/>
+       <forceIndex value="idx_dst_src_ts"/>
+       <splitcolumn value="dst_uid"/>
+       <splitvalue value="128"/>
+       <op value="1">  <!-- query -->
+           <IdColumn value="src_uid"/>  <!-- msg_type 批量查询 -->
+           <condition>
+               <column>
+                   <name value="msg_id"/>
+                   <rel value="1"/>    
+               </column>  
+               <column>
+                   <name value="dst_uid"/>
+                   <rel value="1"/>    
+               </column> 
+               <column>
+                   <name value="from_uid"/>
+                   <rel value="1"/>    
+               </column> 
+               <column>
+                   <name value="status"/>
+               </column> 
+           </condition>
+           <queryresult>
+               <column>
+                   <name value="msg_id" />
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="client_msg_id" />
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="src_uid" />
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="msg_type" />
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="timestamp" />
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="msg_len" />
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="msg_str" />
+                   <type value="7"/>
+               </column>
+           </queryresult>
+       </op>
+   </request>
+
+   <request ID="37">
+       <reqNo value="0x00014022"/> <!--ABS_DAS_UPSERT_USER_RECALL_POOL_REQ-->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_recall_notify"/> 
+       <op value="5">  <!-- upsert user_offline_recall_notify  -->
+           <insertvalue>
+               <column name="uid"/>
+               <column name="from_uid"/>
+               <column name="expire_timestamp"/>
+               <column name="msg_timestamp"/>
+               <column name="status"/>
+               <column name="follow_wechat"/>
+               <column name="is_seller"/>
+               <column name="open_push_auth"/>
+               <column name="mobile"/>
+               <column name="client_type"/>
+               <column name="from_client_type"/>
+               <column name="product_id"/>
+               <column name="product_name"/>
+               <column name="from_user_name"/>
+               <column name="msg_content"/>
+           </insertvalue>
+           <updatevalue>
+               <column name="from_uid"/>
+               <column name="expire_timestamp"/>
+               <column name="msg_timestamp"/>
+               <column name="status"/>
+               <column name="follow_wechat"/>
+               <column name="is_seller"/>
+               <column name="open_push_auth"/>
+               <column name="mobile"/>
+               <column name="client_type"/>
+               <column name="from_client_type"/>
+               <column name="product_id"/>
+               <column name="product_name"/>
+               <column name="from_user_name"/>
+               <column name="msg_content"/>
+           </updatevalue>
+       </op> 
+   </request>
+
+   <request ID="38">
+       <reqNo value="0x00014023"/>  <!-- ABS_DAS_UPSERT_USER_ACTIVE_POOL_REQ  -->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_active_user_notify"/> 
+       <op value="5">  <!-- upsert user_offline_active_user_notify  -->
+           <insertvalue>
+               <column name="uid"/>
+               <column name="from_uid"/>
+               <column name="msg_timestamp"/>
+               <column name="follow_wechat"/>
+               <column name="is_seller"/>
+               <column name="open_push_auth"/>
+               <column name="mobile"/>
+               <column name="client_type"/>
+               <column name="from_client_type"/>
+               <column name="product_id"/>
+               <column name="product_name"/>
+               <column name="from_user_name"/>
+               <column name="msg_content"/>
+           </insertvalue>
+           <updatevalue>
+               <column name="from_uid"/>
+               <column name="msg_timestamp"/>
+               <column name="follow_wechat"/>
+               <column name="is_seller"/>
+               <column name="open_push_auth"/>
+               <column name="mobile"/>
+               <column name="client_type"/>
+               <column name="from_client_type"/>
+               <column name="product_id"/>
+               <column name="product_name"/>
+               <column name="from_user_name"/>
+               <column name="msg_content"/>
+           </updatevalue>
+       </op> 
+   </request>
+
+   <request ID="39">
+       <reqNo value="0x00014024"/> <!-- ABS_DAS_UPSERT_USER_ADDITIONAL_POOL_REQ -->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_additional_notify"/> 
+       <op value="5">  <!-- upsert user_offline_additional_notify  -->
+           <insertvalue>
+               <column name="uid"/>
+               <column name="from_uid"/>
+               <column name="msg_timestamp"/>
+               <column name="follow_wechat"/>
+               <column name="is_seller"/>
+               <column name="open_push_auth"/>
+               <column name="mobile"/>
+               <column name="client_type"/>
+               <column name="from_client_type"/>
+               <column name="product_id"/>
+               <column name="product_name"/>
+               <column name="from_user_name"/>
+               <column name="msg_content"/>
+               <column name="msg_type"/>
+           </insertvalue>
+           <updatevalue>
+               <column name="from_uid"/>
+               <column name="msg_timestamp"/>
+               <column name="follow_wechat"/>
+               <column name="is_seller"/>
+               <column name="open_push_auth"/>
+               <column name="mobile"/>
+               <column name="client_type"/>
+               <column name="from_client_type"/>
+               <column name="product_id"/>
+               <column name="product_name"/>
+               <column name="from_user_name"/>
+               <column name="msg_content"/>
+               <column name="msg_type"/>
+           </updatevalue>
+       </op> 
+   </request>
+
+   <request ID="40">
+       <reqNo value="0x00014025"/>  <!-- ABS_DAS_DELETE_USER_ADDITIONAL_POOL_REQ-->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_additional_notify"/> 
+       <op value="4">  <!-- delete -->
+           <condition>
+               <column>
+                   <name value="uid"/>
+                   <rel value="1"/>
+               </column>
+           </condition>
+       </op>
+   </request>
+
+   <request ID="41">
+       <reqNo value="0x00014026"/>  <!-- ABS_DAS_QUERY_USER_STATUS_IN_RECALL_POOL_REQ -->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_recall_notify"/>
+       <op value="1">  <!-- query -->
+           <condition>
+               <column>
+                   <name value="uid"/>
+                   <rel value="1"/>
+               </column>
+           </condition>
+           <queryresult>
+               <column>
+                   <name value="status"/>
+                   <type value="3"/>
+               </column>
+           </queryresult>
+       </op>
+   </request>
+
+   <request ID="42">
+       <reqNo value="0x00014027"/> <!-- ABS_DAS_DELETE_USER_ACTIVE_POOL_REQ -->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_active_user_notify"/> 
+       <op value="4">  <!-- delete -->
+           <condition>
+               <column>
+                   <name value="uid"/>
+               </column>
+           </condition>
+       </op>
+   </request>
+
+   <request ID="43">
+       <reqNo value="0x00014028"/> <!-- ABS_DAS_DELETE_USER_RECALL_POOL_REQ -->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_recall_notify"/> 
+       <op value="4">  <!-- delete -->
+           <condition>
+               <column>
+                   <name value="uid"/>
+               </column>
+           </condition>
+       </op>
+   </request>
+
+   <request ID="44">
+       <reqNo value="0x00014029"/> <!-- ABS_DAS_QUERY_USER_RECALL_POOL_REQ  -->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_recall_notify"/> 
+       <op value="1">  <!-- query  -->
+           <condition>
+               <column>
+                   <name value="uid"/>
+               </column> 
+           </condition> 
+           <queryresult>
+               <column>
+                   <name value="uid"/>
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="from_uid"/>
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="expire_timestamp"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="msg_timestamp"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="status"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="follow_wechat"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="is_seller"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="open_push_auth"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="mobile"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="client_type"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="from_client_type"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="product_id"/>
+                   <type value="1"/>
+               </column>
+               <column>
+                   <name value="product_name"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="from_user_name"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="msg_content"/>
+                   <type value="7"/>
+               </column>
+           </queryresult> 
+       </op> 
+   </request>
+
+   <request ID="45">
+       <reqNo value="0x00014030"/>  <!-- ABS_DAS_QUERY_USER_ACTIVE_POOL_REQ  -->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_active_user_notify"/> 
+       <op value="1">  <!-- query  -->
+           <condition>
+               <column>
+                   <name value="uid"/>
+               </column> 
+           </condition> 
+           <queryresult>
+               <column>
+                   <name value="uid"/>
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="from_uid"/>
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="msg_timestamp"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="follow_wechat"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="is_seller"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="open_push_auth"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="mobile"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="client_type"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="from_client_type"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="product_id"/>
+                   <type value="1"/>
+               </column>
+               <column>
+                   <name value="product_name"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="from_user_name"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="msg_content"/>
+                   <type value="7"/>
+               </column>
+           </queryresult> 
+       </op> 
+   </request>
+
+   <request ID="46">
+       <reqNo value="0x00014031"/>  <!-- ABS_DAS_QUERY_USER_ADDITIONAL_POOL_REQ  -->
+       <instance value="nxim_offline_arrive"/>
+       <db value="dbwwwnxcom_im_info"/>
+       <table value="user_offline_additional_notify"/> 
+       <op value="1">  <!-- query  -->
+           <condition>
+               <column>
+                   <name value="uid"/>
+               </column> 
+           </condition> 
+           <queryresult>
+               <column>
+                   <name value="uid"/>
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="from_uid"/>
+                   <type value="4"/>
+               </column>
+               <column>
+                   <name value="msg_timestamp"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="follow_wechat"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="is_seller"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="open_push_auth"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="mobile"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="client_type"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="from_client_type"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="product_id"/>
+                   <type value="1"/>
+               </column>
+               <column>
+                   <name value="product_name"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="from_user_name"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="msg_content"/>
+                   <type value="7"/>
+               </column>
+               <column>
+                   <name value="msg_type"/>
+                   <type value="3"/>                                                                                                                                                    
+               </column>
+           </queryresult> 
+       </op> 
+   </request>
+
+   <request ID="47">
+       <reqNo value="0x00014034"/>  <!-- ABS_DAS_QUERY_USER_LOGIN_TERMINAL_REQ -->
+       <instance value="nxim_login_data"/>
+       <db value="dbnx_nxim_user"/>
+       <table value="t_user_login"/>
+       <splitcolumn value="uid"/> 
+       <splitvalue value="128"/> <!--分表算法 splitcolumnvalue/256%splitvalue-->
+       <op value="1">  <!-- query -->
+           <condition>
+               <column>
+                   <name value="uid"/>
+               </column>
+           </condition>
+           <queryresult>
+               <column>
+                   <name value="source_type"/>
+                   <type value="3"/>
+               </column>
+               <column>
+                   <name value="login_time"/>
+                   <type value="3"/>
+               </column>
+           </queryresult>
+       </op>
+   </request>
+   
+  <request ID="48">
+    <reqNo value="0x00014035"/> <!--ABS_DAS_GET_MARKREAD_MSGID-->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>    <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidB"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidA"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="read_time"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+ <!--客服系统： 获取一对一聊天消息数量-->
+  <request ID="49">
+   <reqNo value="0x00014036"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+     <IdColumn value="src_uid"/>  <!-- uidB 批量查询 -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         	<name value="timestamp"/>
+         	<rel value="1"/>
+        </column>
+        <column>
+         	<name value="timestamp"/>
+        </column>
+		</condition>
+     <queryresult>
+       <column>
+         <name value="count(*)" />
+         <type value="3" />
+       </column>
+     </queryresult>
+   </op>
+   </request>
+
+   <request ID="50">
+   <reqNo value="0x00014039"/>  <!--ABS_DAS_SINGLE_UPSERT_CONTACTS-->
+   <instance value="nxim_user_contact"/>
+   <db value="dbwwwnxcom_im"/>
+   <table value="t_user_contact"/>
+   <op value="5">  <!-- upsert -->
+   <insertvalue>
+   <column name="uidA"/>
+   <column name="uidB"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count"/>
+   <column name="unread_min_timestamp"/>
+   </insertvalue>
+   <updatevalue>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count" valuekey="ADD" />
+   <column name="unread_min_timestamp"/>
+   </updatevalue>
+   </op>
+   </request>
+
+  <request ID="51">
+    <reqNo value="0x0001403A"/>  <!-- ABS_DAS_DELETE_CONTACTS  -->
+    <instance value="nxim_user_contact"/>
+    <db value="dbwwwnxcom_im"/>
+    <table value="t_user_contact"/>
+    <op value="4">  <!-- delete -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+    </op>
+  </request>
+
+   <request ID="52">
+   <reqNo value="0x0001403B"/>  <!--ABS_DAS_SINGLE_UPSERT_CONTACTS_NEW-->
+   <instance value="nxim_user_contact_split"/>
+   <db value="dbnx_nxim_contact"/>
+   <table value="t_user_contact"/>
+   <splitcolumn value="uidA"/> 
+   <splitvalue value="256"/>    <!--分表算法 splitcolumnvalue/256%splitvalue-->
+   <op value="5">  <!-- upsert -->
+   <insertvalue>
+   <column name="uidA"/>
+   <column name="uidB"/>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count"/>
+   <column name="is_del"/>
+   <column name="read_time"/>
+   </insertvalue>
+   <updatevalue>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count" valuekey="ADD" />
+   <column name="is_del"/>
+   <column name="read_time"/>
+   </updatevalue>
+   </op>
+  </request>
+
+ <!--ABS_DAS_GET_CONTACT_LIST  获取联系人列表（拉取已经被逻辑删除的联系人）-->
+  <request ID="53">
+    <reqNo value="0x00014041"/>  <!-- ABS_DAS_DELETE_CHEATCONTACTS  -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+         <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+  
+   <request ID="54">
+    <reqNo value="0x00014043"/>  <!-- ABS_DAS_DELETE_CHEATCONTACTS  -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <!--ABS_DAS_GET_ONLINE_MSG 获取双向聊天消息-->
+  <request ID="55">
+   <reqNo value="0x0001403E"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+   	 <IdColumn value="src_uid"/>  <!-- uidB 批量查询 -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         	<name value="timestamp"/>
+         	<rel value="1"/>
+        </column>
+        <column>
+         	<name value="timestamp"/>
+        </column>
+     </condition>
+     <queryresult>
+     	 <column>
+          <name value="msg_id" />
+          <type value="4"/>
+        </column>
+     	 <column>
+          <name value="dst_uid" />
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="src_uid" />
+          <type value="4"/>
+        </column>
+       <column>
+         <name value="timestamp" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="msg_str" resultkey="DECODE" />
+         <type value="7" />
+       </column>
+       <column>
+         <name value="msg_type" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="from_uid" />
+         <type value="3" />
+       </column>
+     </queryresult>
+     <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="ASC"/>
+        </column>
+     </sort>
+   </op>
+   </request>
+ 
+  <!--ABS_DAS_GET_ONLINE_MSG_COUNT 获取双向聊天消息数量-->
+  <request ID="56">
+   <reqNo value="0x0001403F"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         	<name value="timestamp"/>
+         	<rel value="1"/>
+        </column>
+        <column>
+         	<name value="timestamp"/>
+        </column>
+	</condition>
+     <queryresult>
+       <column>
+         <name value="count(*)" />
+         <type value="3" />
+       </column>
+     </queryresult>
+   </op>
+   </request>
+
+ <!--ABS_DAS_GET_CONTACT_LIST 获取联系人UIDS-->
+  <request ID="57">
+  	<reqNo value="0x00014038"/>  <!-- ABS_DAS_DELETE_CONTACTS  -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+  <request ID="58">
+    <reqNo value="0x00014037"/>  <!-- ABS_DAS_DELETE_CHEATCONTACTS  -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="3">  <!-- update -->
+    	<IdColumn value="uidA"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="is_del"/>
+      </updatevalue>
+    </op>
+  </request>
+  
+   <!--ABS_DAS_GET_ONLINE_MSG 获取双向聊天消息-->
+  <request ID="59">
+   <reqNo value="0x00014040"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+   	 <IdColumn value="src_uid"/>  <!-- uidB 批量查询 -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         <name value="info_id"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         	<name value="timestamp"/>
+         	<rel value="1"/>
+        </column>
+        <column>
+         	<name value="timestamp"/>
+        </column>
+     </condition>
+     <queryresult>
+     	 <column>
+          <name value="dst_uid" />
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="src_uid" />
+          <type value="4"/>
+        </column>
+       <column>
+         <name value="timestamp" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="msg_str" resultkey="DECODE" />
+         <type value="7" />
+       </column>
+       <column>
+         <name value="msg_type" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="from_uid" />
+         <type value="3" />
+       </column>
+     </queryresult>
+     <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="ASC"/>
+        </column>
+     </sort>
+   </op>
+   </request>
+
+  <!--ABS_DAS_GET_CONTACTS_COUNT_IN_NEWTABLE 获取联系人UID（从新表里拉取）-->
+  <request ID="60">
+    <reqNo value="0x00014042"/>  <!-- ABS_DAS_GET_CONTACTS_COUNT_IN_NEWTABLE  -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+         <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+        </column>
+      </condition>
+     <queryresult>
+       <column>
+         <name value="count(*)" />
+         <type value="3" />
+       </column>
+     </queryresult>
+    </op>
+  </request>
+  
+  <!--ABS_DAS_QUERY_FIRST_MSG-->
+  <request ID="61">
+   <reqNo value="0x00014045"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         <name value="src_uid"/>
+       </column>
+     </condition>
+     <queryresult>
+     	 <column>
+          <name value="from_uid" />
+          <type value="4"/>
+        </column>
+     </queryresult>
+     <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="ASC"/>
+        </column>
+     </sort>
+   </op>
+   </request>
+
+  <!--ABS_DAS_QUERY_CONVERSATION-->
+  <request ID="62">
+   <reqNo value="0x00014046"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         <name value="src_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         <name value="timestamp"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         <name value="from_uid"/>
+       </column>
+     </condition>
+     <queryresult>
+     	 <column>
+          <name value="from_uid" />
+          <type value="4"/>
+        </column>
+     </queryresult>
+   </op>
+   </request>
+
+  <request ID="63">
+    <reqNo value="0x00014047"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+
+<!--ABS_DAS_QUERY_UNREAD_COUNT-->
+  <request ID="64">
+    <reqNo value="0x00014048"/>
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <forceIndex value="idx_dst_src_ts"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="src_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="from_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="msg_id"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="count(*)" />
+          <type value="3" />
+        </column>
+      </queryresult>
+     </op>
+   </request>
+
+
+<!--ABS_DAS_GET_INCREMENT_CONTACTS-->
+ <request ID="65">
+    <reqNo value="0x00014049"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <!--获取用户全部未读消息计数 -->
+  <request ID="66">
+    <reqNo value="0x00014050"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+    	<IdColumn value="uidB"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+           <name value="uidB" />
+           <type value="4" />
+        </column>
+        <column>
+          <name value="unread_count" />
+          <type value="3" />        
+        </column>
+      </queryresult>
+    </op>
+ </request>
+ 
+ <!--ABS_DAS_QUERY_MSG_COUNT-->
+ <request ID="67">
+     <reqNo value="0x0001405A"/>
+     <instance value="tidb_nxim_cloud_msg"/>
+     <db value="dbwwwnxcom_amonlinemsg"/>
+     <table value="t_user_online_msg"/>
+     <splitcolumn value="dst_uid"/>
+     <splitvalue value="128"/>
+     <op value="1">  <!-- query -->
+         <condition>
+             <column>
+                 <name value="dst_uid"/>
+                 <rel value="1"/>
+             </column>
+             <column>
+                 <name value="src_uid"/>
+             </column>
+         </condition>
+         <queryresult>
+             <column>
+                 <name value="count(*)" />
+                 <type value="3" />
+             </column>
+         </queryresult>
+     </op>
+ </request>
+
+<!--ABS_DAS_GET_MSG_BY_OFFSET_ASC 根据msg_id偏移量，拉取消息-->
+  <request ID="68">
+   <reqNo value="0x0001405B"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <forceIndex value="idx_dst_src_ts"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+   	 <IdColumn value="src_uid"/>  <!-- uidB 批量查询 -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+       	<name value="msg_id"/>
+       </column>
+     </condition>
+     <queryresult>
+     	 <column>
+          <name value="msg_id" />
+          <type value="4"/>
+        </column>
+     	 <column>
+          <name value="dst_uid" />
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="src_uid" />
+          <type value="4"/>
+        </column>
+       <column>
+         <name value="timestamp" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="msg_str" resultkey="DECODE" />
+         <type value="7" />
+       </column>
+       <column>
+         <name value="msg_type" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="from_uid" />
+         <type value="3" />
+       </column>
+     </queryresult>
+     <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="ASC"/>
+        </column>
+     </sort>
+   </op>
+   </request> 
+
+<!--ABS_DAS_GET_MSG_BY_OFFSET_DESC 根据msg_id偏移量，拉取消息，结果降序-->
+  <request ID="69">
+   <reqNo value="0x0001405C"/>
+   <instance value="tidb_nxim_cloud_msg"/>
+   <db value="dbwwwnxcom_amonlinemsg"/>
+   <table value="t_user_online_msg"/>
+   <forceIndex value="idx_dst_src_ts"/>
+   <splitcolumn value="dst_uid"/>
+   <splitvalue value="128"/>
+   <op value="1">  <!-- query -->
+   	 <IdColumn value="src_uid"/>  <!-- uidB 批量查询 -->
+     <condition>
+       <column>
+         <name value="dst_uid"/>
+         <rel value="1"/>
+       </column>
+       <column>
+         	<name value="msg_id"/>
+        </column>
+     </condition>
+     <queryresult>
+     	 <column>
+          <name value="msg_id" />
+          <type value="4"/>
+        </column>
+     	 <column>
+          <name value="dst_uid" />
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="src_uid" />
+          <type value="4"/>
+        </column>
+       <column>
+         <name value="timestamp" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="msg_str" resultkey="DECODE" />
+         <type value="7" />
+       </column>
+       <column>
+         <name value="msg_type" />
+         <type value="4" />
+       </column>
+       <column>
+         <name value="from_uid" />
+         <type value="3" />
+       </column>
+     </queryresult>
+     <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="DESC"/>
+        </column>
+     </sort>
+   </op>
+</request> 
+
+  <!-- 更新分库的离线消息状态(丢弃) -->
+  <request ID="70">
+    <reqNo value="0x0001405D"/>
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="3">  <!-- update -->
+     <IdColumn value="msg_id"/>  <!-- msg_type 批量查询 -->
+     <condition>
+       <column>
+          <name value="dst_uid"/>
+       </column> 
+     </condition>
+     <updatevalue>
+        <column name="status"/>
+     </updatevalue>
+    </op>
+  </request>
+
+  <!-- 获取指定的联系人 -->
+  <request ID="71">  
+    <reqNo value="0x0001405E"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <IdColumn value="uidB"/>  <!-- uidB 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="DESC"/>
+        </column>
+      </sort>
+    </op>
+  </request>
+
+    <!--获取两个用户之间的聊天记录数目-->
+    <request ID="72">
+    <reqNo value="0x0001405F"/>
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>    
+        </column> 
+        <column>
+          <name value="src_uid"/>
+          <rel value="1"/>   
+        </column> 
+        <column>
+          <name value="timestamp"/>
+          <rel value="1"/>     
+        </column> 
+        <column>
+          <name value="timestamp"/>
+        </column> 
+      </condition>
+      <queryresult>
+        <column>
+          <name value="count(*)" />
+          <type value="3" />     
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+  <request ID="73">
+   <reqNo value="0x00014060"/>  <!--ABS_DAS_SINGLE_UPSERT_CONTACT_SENDER_TIDB-->
+   <instance value="tidb_nxim_contact"/>
+   <db value="tdb_im_contact"/>
+   <table value="t_user_contact"/>
+   <op value="5">  <!-- upsert -->
+   <insertvalue>
+   <column name="uidA"/>
+   <column name="uidB"/>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count"/>
+   <column name="is_del"/>
+   <column name="read_time"/>
+   </insertvalue>
+   <updatevalue>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count"/>
+   <column name="is_del"/>
+   <column name="read_time"/>
+   </updatevalue>
+   </op>
+  </request>
+
+  <request ID="74">
+    <reqNo value="0x00014061"/>  <!--ABS_DAS_SINGLE_UPSERT_CONTACT_RECVER_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="5">  <!-- upsert -->
+    <insertvalue>
+      <column name="uidA"/>
+      <column name="uidB"/>
+      <column name="msg_type"/>
+      <column name="msg_direction"/>
+      <column name="client_msg_id"/>
+      <column name="timestamp"/>
+      <column name="msg_len"/>
+      <column name="msg_content"/>
+      <column name="unread_count"/>
+      <column name="is_del"/>
+    </insertvalue>
+    <updatevalue>
+      <column name="msg_type"/>
+      <column name="msg_direction"/>
+      <column name="client_msg_id"/>
+      <column name="timestamp"/>
+      <column name="msg_len"/>
+      <column name="msg_content"/>
+      <column name="unread_count" valuekey="ADD" />
+      <column name="is_del"/>
+    </updatevalue>
+    </op>
+  </request>
+
+  <request ID="75">
+    <reqNo value="0x00014062"/>  <!-- ABS_DAS_SINGLE_DELETE_CONTACTS_TIDB  -->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="3">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="is_del"/>
+        <column name="unread_count"/>
+      </updatevalue>
+    </op>
+  </request>
+
+<request ID="76">
+    <reqNo value="0x00014063"/>  <!-- ABS_DAS_SINGLE_READED_CONTACTS_MSG_TIDB  -->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="3">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="read_time"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <request ID="77">
+    <reqNo value="0x00014064"/>  <!-- ABS_DAS_CLEAR_UNREAD_TIDB -->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="3">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="unread_count"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <request ID="78">
+    <reqNo value="0x00014065"/> <!--ABS_DAS_GET_USER_DEV_TOKEN_TIDB-->
+    <instance value="tidb_nxim_devtoken"/>
+    <db value="tdb_im_devtoken"/>
+    <table value="t_user_dev_token"/>
+    <op value="1">  <!-- query -->
+    <IdColumn value="dev_type"/>  <!-- msg_type 批量查询 -->
+    <condition>
+        <column>
+          <name value="uid"/>
+        </column>
+    </condition>
+      <queryresult>
+      <column>
+        <name value="uid"/>
+        <type value="4"/>
+      </column>
+      <column>
+        <name value="dev_type"/>
+        <type value="3"/>
+      </column>
+      <column>
+        <name value="token_len"/>
+        <type value="3"/>
+      </column>
+      <column>
+        <name value="token"/>
+        <type value="7"/>
+      </column>
+      <column>
+        <name value="version"/>
+        <type value="7"/>
+      </column>
+      <column>
+        <name value="timestamp"/>
+        <type value="4"/>
+      </column>
+      </queryresult>
+      <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="DESC"/>
+        </column>
+      </sort>    
+    </op>
+  </request>
+
+  <request ID="79">
+    <reqNo value="0x00014066"/>
+    <instance value="tidb_nxim_devtoken"/> <!--ABS_DAS_UPSERT_USER_DEV_TOKEN_TIDB-->
+    <db value="tdb_im_devtoken"/>
+    <table value="t_user_dev_token"/>
+    <op value="5">   <!-- upsert -->
+      <insertvalue>
+        <column name="uid"/>
+        <column name="dev_type"/>
+        <column name="token"/>
+        <column name="token_len"/>
+        <column name="timestamp"/>
+        <column name="version"/>
+      </insertvalue>
+      <updatevalue>
+        <column name="dev_type"/>
+        <column name="token"/>
+        <column name="token_len"/>
+        <column name="timestamp"/>
+        <column name="version"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!--tidb获取用户全部未读消息计数 -->
+  <request ID="80">
+    <reqNo value="0x00014067"/> <!--ABS_DAS_GET_UNREAD_COUNT_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="unread_count"/>
+        </column>  
+      </condition>
+      <queryresult>
+        <column>
+           <name value="uidB" />
+           <type value="4" />
+        </column>
+        <column>
+          <name value="unread_count" />
+          <type value="3" />        
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+  <!--拉联系人(老接口)-->
+  <request ID="81">
+    <reqNo value="0x00014068"/> <!--ABS_DAS_GET_CONTACTS_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <!--拉离线_查询联系人(老接口)-->
+  <request ID="82">
+    <reqNo value="0x00014069"/> <!--ABS_QUICK_QUERY_am_CONTACT_LIST_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+        <name value="uidA"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB" />
+          <type value="4" />
+        </column>
+      </queryresult>
+      <sort>
+        <column>
+          <name value="timestamp"/>
+	        <type value="DESC"/>
+        </column>
+      </sort>
+    </op>
+  </request>
+
+  <!-- 获取指定的联系人 -->
+  <request ID="84">  
+    <reqNo value="0x0001406B"/> <!--ABS_DAS_GET_FIXED_CONTACTS_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <IdColumn value="uidB"/>  <!-- uidB 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="DESC"/>
+        </column>
+      </sort>
+    </op>
+  </request>
+
+  <!--拉增量联系人-->
+ <request ID="85">
+    <reqNo value="0x0001406C"/> <!--ABS_DAS_GET_INCREMENT_CONTACTS_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+   <!--获取消息已读-->
+   <request ID="86">
+    <reqNo value="0x0001406D"/>  <!--ABS_DAS_GET_MARKREAD_MSGID_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidB"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidA"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="read_time"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+  <!--查询联系人库时间戳(extlogic接口 user_kefu_get_contacts)-->
+  <request ID="87">
+    <reqNo value="0x0001406E"/>  <!--ABS_DAS_GET_TIMESTAMP_KEFU_NEW_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <forceIndex value="idx_uidA_ts"/>
+    <op value="1">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <!--拉取联系人(extlogic接口 user_kefu_get_contacts)-->
+  <request ID="88">
+    <reqNo value="0x0001406F"/>  <!--ABS_DAS_GET_CONTACTS_KEFU_NEW_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <forceIndex value="idx_uidA_ts"/>
+    <op value="1">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+         <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <!--获取联系人数目(extlogic接口 user_kefu_get_contacts_count)-->
+  <request ID="89">
+    <reqNo value="0x00014070"/>  <!--ABS_DAS_GET_CONTACTS_COUNT_KEFU_NEW_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <forceIndex value="idx_uidA_ts"/>
+    <op value="1">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+         <rel value="1"/>
+        </column>
+        <column>
+         <name value="timestamp"/>
+        </column>
+      </condition>
+     <queryresult>
+       <column>
+         <name value="count(*)" />
+         <type value="3" />
+       </column>
+     </queryresult>
+    </op>
+  </request>
+
+  <!--获取联系人uid集合(extlogic接口 user_proc_cheatuser)-->
+  <request ID="90">
+  	<reqNo value="0x00014071"/>  <!--ABS_DAS_GET_CONTACTS_UIDS_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+   <!--获取未读数(extlogic接口 amservice_get_unread_count)-->
+  <request ID="91">
+    <reqNo value="0x00014072"/> <!--ABS_DAS_SERVICE_GET_UNREAD_COUNT_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+    	<IdColumn value="uidB"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+           <name value="uidB" />
+           <type value="4" />
+        </column>
+        <column>
+          <name value="unread_count" />
+          <type value="3" />        
+        </column>
+      </queryresult>
+    </op>
+ </request>
+
+ <!--拉联系人(新接口)-->
+ <request ID="92">
+    <reqNo value="0x00014073"/> <!--ABS_DAS_GET_CONTACTS_NEW_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <!--私信自动回复时 upsert tidb_联系人表-->
+  <request ID="93">
+   <reqNo value="0x00014074"/>  <!--ABS_DAS_SINGLE_UPSERT_MSG_AUTO_CONTACT_SENDER_TIDB-->
+   <instance value="tidb_nxim_contact"/>
+   <db value="tdb_im_contact"/>
+   <table value="t_user_contact"/>
+   <op value="5">  <!-- upsert -->
+   <insertvalue>
+   <column name="uidA"/>
+   <column name="uidB"/>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="is_del"/>
+   </insertvalue>
+   <updatevalue>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="is_del"/>
+   </updatevalue>
+   </op>
+  </request>
+
+  <!--私信撤回时根据dst_uid src_uid和client_msg_id获取记录内容-->
+  <request ID="94">
+    <reqNo value="0x00014075"/>    <!--ABS_DAS_QUERY_CLOUD_MSG_WHEN_BACKWARD 私信撤回时拉云消息接口-->
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="src_uid"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="client_msg_id"/>
+        </column>
+      </condition>
+    <queryresult>
+      <column>
+          <name value="msg_len" />
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="msg_str" />
+          <type value="7"/>
+      </column>
+    </queryresult>   
+    </op>
+  </request>
+
+  <!-- 私信撤回时更新云消息表的私信内容 -->
+  <request ID="95">
+    <reqNo value="0x00014076"/>  <!-- ABS_DAS_UPDATE_CLOUD_MSG_CONTETN -->
+    <business value="101"/>
+    <op value="3">  <!-- update -->
+     <condition>
+       <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="src_uid"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="client_msg_id"/>
+        </column> 
+     </condition>
+     <updatevalue>
+        <column name="msg_len" />
+        <column name="msg_str" /> 
+     </updatevalue>
+    </op>
+  </request>
+
+  <!-- 私信撤回时更新MySQL库联系人表的私信内容 -->
+  <request ID="96">
+    <reqNo value="0x00014077"/>  <!-- ABS_DAS_UPDATE_CONTACT_MSG_CONTETN -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="3">  <!-- update -->
+     <condition>
+       <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="client_msg_id"/>
+       </column> 
+     </condition>
+     <updatevalue>
+        <column name="msg_len" />
+        <column name="msg_content" /> 
+     </updatevalue>
+    </op>
+  </request>
+
+  <request ID="97">
+    <reqNo value="0x00014078"/>  <!-- ABS_DAS_QUERY_USER_LOGIN_BMP_REQ -->
+    <instance value="nxim_offline_arrive"/>
+    <db value="dbwwwnxcom_im_info"/>
+    <table value="user_login_statistics"/>
+    <op value="1">  <!-- query -->
+     <condition>
+        <column>
+          <name value="uid"/>
+        </column>
+     </condition>
+     <queryresult>
+      <column>
+        <name value="login_day_bitmap"/>
+        <type value="3"/>
+      </column>
+      <column>
+        <name value="dev_type"/>
+        <type value="3"/>
+      </column>
+      <column>
+        <name value="TIMESTAMP"/>
+        <type value="3"/>
+      </column>
+     </queryresult>
+    </op>
+  </request>
+  
+    <request ID="98">
+    <reqNo value="0x00014079"/>  <!-- ABS_DAS_QUERY_USER_LOGIN_INFO_REQ -->
+    <instance value="nxim_login_data"/>
+    <db value="dbnx_nxim_user"/>
+    <table value="t_user_login"/>
+    <splitcolumn value="uid"/>
+    <splitvalue value="128"/> <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uid"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="source_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="login_time"/>
+          <type value="3"/>
+        </column>
+      </queryresult>
+      <sort>
+        <column>
+          <name value="login_time"/>
+          <type value="DESC"/>
+        </column>
+      </sort>
+    </op>
+  </request> 
+
+  <!-- 私信撤回时，更新tidb联系人库的私信内容 -->
+  <request ID="99">
+    <reqNo value="0x0001407A"/>  <!-- ABS_DAS_UPDATE_CONTACT_MSG_CONTETN_TIDB -->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="3">  <!-- update -->
+     <condition>
+       <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="client_msg_id"/>
+       </column> 
+     </condition>
+     <updatevalue>
+        <column name="msg_len" />
+        <column name="msg_content" /> 
+     </updatevalue>
+    </op>
+  </request>
+
+  <!-- 发送私信时，insert TIDb库私信表(丢弃) -->
+  <request ID="100">
+    <reqNo value="0x0001407B"/> <!-- ABS_DAS_INSERT_CLOUD_MSG_TIDB -->
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="2">   <!-- insert -->
+      <insertvalue>
+        <column name="msg_id"/>
+        <column name="client_msg_id"/>
+        <column name="dst_uid"/>
+        <column name="src_uid"/>
+        <column name="from_uid"/>
+        <column name="msg_type"/>
+        <column name="timestamp"/>
+        <column name="msg_len"/>
+        <column name="msg_str"/>
+        <column name="info_id"/>
+        <column name="status"/>
+        <column name="buyer"/>
+      </insertvalue>
+    </op>
+  </request>
+
+  <!-- 私信撤回时，update TIDb库私信表私信内容 -->
+  <request ID="101">
+    <reqNo value="0x0001407C"/>  <!-- ABS_DAS_UPDATE_CLOUD_MSG_CONTENT_TIDB -->
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="3">  <!-- update -->
+     <condition>
+       <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="src_uid"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="client_msg_id"/>
+       </column> 
+     </condition>
+     <updatevalue>
+        <column name="msg_len" />
+        <column name="msg_str" /> 
+     </updatevalue>
+    </op>
+  </request>
+
+  <!-- 拉云消息时，update TIDb库私信表私信状态(丢弃) -->
+  <request ID="102">
+    <reqNo value="0x0001407D"/>  <!-- ABS_DAS_UPDATE_CLOUD_MSG_STATUS_TIDB -->
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="3">  <!-- update -->
+     <condition>
+       <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="msg_id"/>
+       </column> 
+     </condition>
+     <updatevalue>
+        <column name="status" />
+     </updatevalue>
+    </op>
+  </request>
+
+  <!-- 从TIDB库的联系人表中获取用户全部未读消息数 重复定义，抛弃-->
+  <request ID="103">
+    <reqNo value="0x0001407E"/> <!-- ABS_DAS_SERVICE_GET_UNREAD_COUNT_TIDB -->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+    	<IdColumn value="uidB"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+           <name value="uidB" />
+           <type value="4" />
+        </column>
+        <column>
+          <name value="unread_count" />
+          <type value="3" />        
+        </column>
+      </queryresult>
+    </op>
+ </request>
+
+  <!-- 拉离线_清空未读数(老接口)时，清空TiDB库中联系人表的用户所有的未读数 -->
+  <request ID="104">
+    <reqNo value="0x0001406A"/> <!-- ABS_DAS_CLEAR_ALL_UNREAD_TIDB -->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="3">  <!-- update-->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <rel value="1"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="unread_count"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!-- MySQL库，对消息已读 -->
+  <request ID="105">
+    <reqNo value="0x0001407F"/>  <!-- ABS_DAS_SINGLE_READED_CONTACTS_MSG  -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/>
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="3">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="read_time"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!--私信自动回复时，upsert MySQL_联系人表(不更新 read_time字段)-->
+  <request ID="106">
+    <reqNo value="0x00014080"/>  <!-- ABS_DAS_SINGLE_UPSERT_MSG_AUTO_CONTACT_SENDER -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/>
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="5">  <!-- upsert -->
+      <insertvalue>
+        <column name="uidA"/>
+        <column name="uidB"/>
+        <column name="msg_type"/>
+        <column name="msg_direction"/>
+        <column name="client_msg_id"/>
+        <column name="timestamp"/>
+        <column name="msg_len"/>
+        <column name="msg_content"/>
+        <column name="is_del"/>
+      </insertvalue>
+      <updatevalue>
+        <column name="msg_type"/>
+        <column name="msg_direction"/>
+        <column name="client_msg_id"/>
+        <column name="timestamp"/>
+        <column name="msg_len"/>
+        <column name="msg_content"/>
+        <column name="is_del"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!-- 发信人入MySQL联系人库 -->
+  <request ID="107">
+    <reqNo value="0x00014081"/>  <!-- ABS_DAS_SINGLE_UPSERT_CONTACT_SENDER -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/>
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="5">  <!-- upsert -->
+      <insertvalue>
+        <column name="uidA"/>
+        <column name="uidB"/>
+        <column name="msg_type"/>
+        <column name="msg_direction"/>
+        <column name="client_msg_id"/>
+        <column name="timestamp"/>
+        <column name="msg_len"/>
+        <column name="msg_content"/>
+        <column name="unread_count"/>
+        <column name="is_del"/>
+        <column name="read_time"/>
+      </insertvalue>
+      <updatevalue>
+        <column name="msg_type"/>
+        <column name="msg_direction"/>
+        <column name="client_msg_id"/>
+        <column name="timestamp"/>
+        <column name="msg_len"/>
+        <column name="msg_content"/>
+        <column name="unread_count"/>
+        <column name="is_del"/>
+        <column name="read_time"/>
+      </updatevalue>
+    </op>
+  </request>
+ 
+  <!-- 收信人入MySQL联系人库 -->
+  <request ID="108">
+    <reqNo value="0x00014082"/>  <!-- ABS_DAS_SINGLE_UPSERT_CONTACT_RECVER -->
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/>
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="5">  <!-- upsert -->
+    <insertvalue>
+      <column name="uidA"/>
+      <column name="uidB"/>
+      <column name="msg_type"/>
+      <column name="msg_direction"/>
+      <column name="client_msg_id"/>
+      <column name="timestamp"/>
+      <column name="msg_len"/>
+      <column name="msg_content"/>
+      <column name="unread_count"/>
+      <column name="is_del"/>
+    </insertvalue>
+    <updatevalue>
+      <column name="msg_type"/>
+      <column name="msg_direction"/>
+      <column name="client_msg_id"/>
+      <column name="timestamp"/>
+      <column name="msg_len"/>
+      <column name="msg_content"/>
+      <column name="unread_count" valuekey="ADD" />
+      <column name="is_del"/>
+    </updatevalue>
+    </op>
+  </request>
+  
+  <!-- MySQL联系人库，接收者入库 -->
+  <request ID="109">
+   <reqNo value="0x00014083"/>  <!--ABS_DAS_SINGLE_UPSERT_CONTACTS_NEW_RECVER-->
+   <instance value="nxim_user_contact_split"/>
+   <db value="dbnx_nxim_contact"/>
+   <table value="t_user_contact"/>
+   <splitcolumn value="uidA"/> 
+   <splitvalue value="256"/>    <!--分表算法 splitcolumnvalue/256%splitvalue-->
+   <op value="5">  <!-- upsert -->
+   <insertvalue>
+   <column name="uidA"/>
+   <column name="uidB"/>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count"/>
+   <column name="is_del"/>
+   </insertvalue>
+   <updatevalue>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count" valuekey="ADD" />
+   <column name="is_del"/>
+   </updatevalue>
+   </op>
+  </request>
+
+  <!-- 更新TiDB库消息列表的消息状态 -->
+  <request ID="110">
+    <reqNo value="0x00014084"/>  <!-- ABS_DAS_UPDATE_MSG_STATE_LIST_TIDB -->
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="3">  <!-- update -->
+     <IdColumn value="msg_id"/>  <!-- msg_type 批量查询 -->
+     <condition>
+       <column>
+          <name value="dst_uid"/>
+       </column> 
+     </condition>
+     <updatevalue>
+        <column name="status"/>
+     </updatevalue>
+    </op>
+  </request>
+
+  <!-- 更新MySQL库单条消息的消息状态 -->
+  <request ID="111">
+    <reqNo value="0x00014085"/>  <!-- ABS_DAS_UPDATE_CLOUD_MSG_STATUS_SINGLE_MYSQL -->
+    <business value="101"/>
+    <op value="3">  <!-- update -->
+     <condition>
+       <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="msg_id"/>
+       </column> 
+     </condition>
+     <updatevalue>
+        <column name="status" />
+     </updatevalue>
+    </op>
+  </request>
+
+    <!-- 发送私信时，insert MySQL库私信表 -->
+  <request ID="112">
+    <reqNo value="0x00014086"/> <!-- ABS_DAS_INSERT_CLOUD_MSG_MYSQL -->
+    <business value="101"/>
+    <op value="2">   <!-- insert -->
+      <insertvalue>
+        <column name="msg_id"/>
+        <column name="client_msg_id"/>
+        <column name="dst_uid"/>
+        <column name="src_uid"/>
+        <column name="from_uid"/>
+        <column name="msg_type"/>
+        <column name="timestamp"/>
+        <column name="msg_len"/>
+        <column name="msg_str"/>
+        <column name="info_id"/>
+        <column name="status"/>
+        <column name="buyer"/>
+      </insertvalue>
+    </op>
+  </request>
+
+<request ID="113">
+    <reqNo value="0x00014087"/>  <!-- ABS_DAS_SINGLE_READED_SM_CONTACTS_MSG_TIDB  -->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="3">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="read_time"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <request ID="114">
+    <reqNo value="0x00014088"/> <!--ABS_DAS_SM_GET_UNREAD_COUNT_TIDB-->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="unread_count"/>
+        </column>  
+      </condition>
+      <queryresult>
+        <column>
+           <name value="uidB" />
+           <type value="4" />
+        </column>
+        <column>
+          <name value="unread_count" />
+          <type value="3" />        
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+ <request ID="115">
+    <reqNo value="0x00014089"/>    <!--ABS_DAS_GET_SM_CLOUD_MSG 子母账号拉云消息接口-->
+    <instance value="mysql_nxim_sm_cloud_msg"/>
+    <db value="dbam_dbim_smcloudmsg"/>
+    <table value="t_sm_cloud_msg"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="timestamp"/>
+          <rel value="1"/>
+        </column>
+      </condition>
+    <queryresult>
+      <column>
+          <name value="msg_id"/>
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="uidA"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="uidB"/>
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="uidC"/>
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="uid_sm"/>
+          <type value="3"/>
+      </column>
+       <column>
+          <name value="msg_direction"/>
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="timestamp" />
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="msg_len" />
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="msg_content" />
+          <type value="7"/>
+      </column>
+    </queryresult>
+    <sort>
+     <column>
+       <name value="timestamp"/>
+       <type value="DESC"/>
+     </column>
+    </sort>    
+    </op>
+  </request>
+
+<!--子母账号拉联系人-->
+ <request ID="116">
+    <reqNo value="0x0001408A"/> <!--ABS_DAS_GET_SM_CONTACTS_TIDB-->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+      <column>
+          <name value="uidA"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="uidC"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="uid_sm"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+
+ <request ID="117">
+    <reqNo value="0x0001408B"/>  <!--ABS_DAS_SM_GET_MSG_READED_TIME_TIDB-->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+           <rel value="1"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="read_time"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+    </op>
+  </request>
+
+ <!--ABS_DAS_QUERY_SM_UNREAD_COUNT-->
+  <request ID="118">
+    <reqNo value="0x0001408C"/>
+    <instance value="mysql_nxim_sm_cloud_msg"/>
+    <db value="dbam_dbim_smcloudmsg"/>
+    <table value="t_sm_cloud_msg"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="msg_id"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="count(*)" />
+          <type value="3" />
+        </column>
+      </queryresult>
+     </op>
+   </request>
+
+   <request ID="119">
+    <reqNo value="0x0001408D"/>  <!-- ABS_DAS_RESET_SM_UNREAD_COUNT -->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="3">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="unread_count"/>
+      </updatevalue>
+    </op>
+  </request>
+
+  <!--私信撤回时根据uidA uidB uidC和client_msg_id获取记录内容-->
+  <request ID="120">
+    <reqNo value="0x0001408E"/>    <!--ABS_DAS_QUERY_SM_CLOUD_MSG_WHEN_BACKWARD 子母账号业务私信撤回时拉云消息接口-->
+    <instance value="mysql_nxim_sm_cloud_msg"/>
+    <db value="dbam_dbim_smcloudmsg"/>
+    <table value="t_sm_cloud_msg"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidC"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="client_msg_id"/>
+        </column>
+      </condition>
+    <queryresult>
+      <column>
+          <name value="msg_len" />
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="msg_content" />
+          <type value="7"/>
+      </column>
+    </queryresult>   
+    </op>
+  </request>
+
+  <!-- 私信撤回时更新云消息表的私信内容 -->
+  <request ID="121">
+    <reqNo value="0x0001408F"/>  <!-- ABS_DAS_UPDATE_CLOUD_MSG_CONTETN -->
+    <instance value="mysql_nxim_sm_cloud_msg"/>
+    <db value="dbam_dbim_smcloudmsg"/>
+    <table value="t_sm_cloud_msg"/>
+    <op value="3">  <!-- update -->
+     <condition>
+       <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidC"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="client_msg_id"/>
+        </column> 
+     </condition>
+     <updatevalue>
+        <column name="msg_len" />
+        <column name="msg_content" /> 
+     </updatevalue>
+    </op>
+  </request>
+
+    <!-- 子母账号业务私信撤回时，更新tidb联系人库的私信内容 -->
+  <request ID="122">
+    <reqNo value="0x00014090"/>  <!-- ABS_DAS_UPDATE_CONTACT_MSG_CONTETN_TIDB -->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="3">  <!-- update -->
+     <condition>
+       <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+       </column>
+       <column>
+          <name value="client_msg_id"/>
+       </column> 
+     </condition>
+     <updatevalue>
+        <column name="msg_len" />
+        <column name="msg_content" /> 
+     </updatevalue>
+    </op>
+  </request>
+
+  <request ID="123">
+   <reqNo value="0x00014091"/>  <!--ABS_DAS_SINGLE_UPSERT_SM_CONTACT_SENDER_TIDB-->
+   <instance value="mysql_nxim_sm_contact"/>
+   <db value="dbam_dbim_smcontact"/>
+   <table value="t_sm_contact"/>
+   <op value="5">  <!-- upsert -->
+   <insertvalue>
+   <column name="uidA"/>
+   <column name="uidB"/>
+   <column name="uidC"/>
+   <column name="uid_sm"/>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count"/>
+   <column name="is_del"/>
+   <column name="read_time"/>
+   </insertvalue>
+   <updatevalue>
+   <column name="uidC"/>
+   <column name="uid_sm"/>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count"/>
+   <column name="is_del"/>
+   <column name="read_time"/>
+   </updatevalue>
+   </op>
+  </request>
+
+  <request ID="124">
+    <reqNo value="0x00014092"/>  <!--ABS_DAS_SINGLE_UPSERT_SM_CONTACT_RECVER_TIDB-->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="5">  <!-- upsert -->
+    <insertvalue>
+      <column name="uidA"/>
+      <column name="uidB"/>
+      <column name="uidC"/>
+      <column name="uid_sm"/>
+      <column name="msg_type"/>
+      <column name="msg_direction"/>
+      <column name="client_msg_id"/>
+      <column name="timestamp"/>
+      <column name="msg_len"/>
+      <column name="msg_content"/>
+      <column name="unread_count"/>
+      <column name="is_del"/>
+    </insertvalue>
+    <updatevalue>
+      <column name="uidC"/>
+      <column name="uid_sm"/>
+      <column name="msg_type"/>
+      <column name="msg_direction"/>
+      <column name="client_msg_id"/>
+      <column name="timestamp"/>
+      <column name="msg_len"/>
+      <column name="msg_content"/>
+      <column name="unread_count" valuekey="ADD" />
+      <column name="is_del"/>
+    </updatevalue>
+    </op>
+  </request>
+
+   <request ID="125">
+    <reqNo value="0x00014093"/>  <!-- ABS_DAS_SINGLE_SM_DELETE_CONTACTS_TIDB  -->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="3">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="is_del"/>
+        <column name="unread_count"/>
+      </updatevalue>
+    </op>
+  </request>
+
+   <!--拉联系人(新接口)-->
+ <request ID="126">
+    <reqNo value="0x00014094"/> <!--ABS_DAS_GET_ALL_CONTACTS_NEW_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+         <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <request ID="127">
+    <reqNo value="0x00014095"/>
+    <instance value="nxim_user_contact_split"/>
+    <db value="dbnx_nxim_contact"/>
+    <table value="t_user_contact"/>
+    <splitcolumn value="uidA"/> 
+    <splitvalue value="256"/>   <!--分表算法 splitcolumnvalue/256%splitvalue-->
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+         <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <!-- mysql拉取指定的子母号联系人 弃用 -->
+  <request ID="128">  
+    <reqNo value="0x00014096"/> <!--ABS_DAS_GET_FIXED_SM_CONTACTS-->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="1">  <!-- query -->
+      <IdColumn value="uidB"/>  <!-- uidB 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>       
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>     
+      </queryresult>
+      <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="DESC"/>
+        </column>
+      </sort>
+    </op>
+  </request>
+
+<request ID="129">
+    <reqNo value="0x00014097"/>    <!--ABS_DAS_GET_SM_ASC_CLOUD_MSG 子母账号正向拉指定范围消息接口-->
+    <instance value="mysql_nxim_sm_cloud_msg"/>
+    <db value="dbam_dbim_smcloudmsg"/>
+    <table value="t_sm_cloud_msg"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+        </column>
+      </condition>
+    <queryresult>
+      <column>
+          <name value="msg_id"/>
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="uidA"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="uidB"/>
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="uidC"/>
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="uid_sm"/>
+          <type value="3"/>
+      </column>
+       <column>
+          <name value="msg_direction"/>
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="timestamp" />
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="msg_len" />
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="msg_content" />
+          <type value="7"/>
+      </column>
+    </queryresult>
+    <sort>
+     <column>
+       <name value="timestamp"/>
+       <type value="ASC"/>
+     </column>
+    </sort>    
+    </op>
+  </request>
+
+  <!--子母账号正向拉取指定范围联系人-->
+ <request ID="130">
+    <reqNo value="0x00014098"/> <!--ABS_DAS_GET_SM_ASC_CONTACTS-->
+    <instance value="mysql_nxim_sm_contact"/>
+    <db value="dbam_dbim_smcontact"/>
+    <table value="t_sm_contact"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+      <column>
+          <name value="uidA"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="uidC"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="uid_sm"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="ASC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <!-- TiDB联系人库获取uidC字段值 -->
+  <request ID="131">  
+    <reqNo value="0x00014099"/> <!--ABS_DAS_GET_CONTACT_UIDC_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidC"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+      <sort>
+        <column>
+          <name value="timestamp"/>
+          <type value="DESC"/>
+        </column>
+      </sort>
+    </op>
+  </request>
+
+<!--B2C业务子号拉联系人-->
+ <request ID="132">
+    <reqNo value="0x0001409A"/> <!--ABS_DAS_GET_B2C_CONTACTS_NEW_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <IdColumn value="msg_type"/>  <!-- msg_type 批量查询 -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <queryresult>
+        <column>
+          <name value="uidB"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+          <type value="4"/>
+        </column>
+        <column>
+          <name value="unread_count"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_direction"/>
+          <type value="1"/>
+        </column>
+        <column>
+          <name value="msg_type"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_len"/>
+          <type value="3"/>
+        </column>
+        <column>
+          <name value="msg_content"/>
+          <type value="7"/>
+        </column>
+         <column>
+          <name value="uidC"/>
+          <type value="4"/>
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+  <request ID="133">
+   <reqNo value="0x0001409B"/>  <!--ABS_DAS_SINGLE_UPSERT_2B_CONTACT_SENDER_TIDB-->
+   <instance value="tidb_nxim_contact"/>
+   <db value="tdb_im_contact"/>
+   <table value="t_user_contact"/>
+   <op value="5">  <!-- upsert -->
+   <insertvalue>
+   <column name="uidA"/>
+   <column name="uidB"/>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count"/>
+   <column name="is_del"/>
+   <column name="read_time"/>
+   <column name="uidC"/>
+   </insertvalue>
+   <updatevalue>
+   <column name="msg_type"/>
+   <column name="msg_direction"/>
+   <column name="client_msg_id"/>
+   <column name="timestamp"/>
+   <column name="msg_len"/>
+   <column name="msg_content"/>
+   <column name="unread_count"/>
+   <column name="is_del"/>
+   <column name="read_time"/>
+   <column name="uidC"/>
+   </updatevalue>
+   </op>
+  </request>
+
+  <request ID="134">
+    <reqNo value="0x0001409C"/>  <!--ABS_DAS_SINGLE_UPSERT_2B_CONTACT_RECVER_TIDB-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="5">  <!-- upsert -->
+    <insertvalue>
+      <column name="uidA"/>
+      <column name="uidB"/>
+      <column name="msg_type"/>
+      <column name="msg_direction"/>
+      <column name="client_msg_id"/>
+      <column name="timestamp"/>
+      <column name="msg_len"/>
+      <column name="msg_content"/>
+      <column name="unread_count"/>
+      <column name="is_del"/>
+      <column name="uidC"/>
+    </insertvalue>
+    <updatevalue>
+      <column name="msg_type"/>
+      <column name="msg_direction"/>
+      <column name="client_msg_id"/>
+      <column name="timestamp"/>
+      <column name="msg_len"/>
+      <column name="msg_content"/>
+      <column name="unread_count" valuekey="ADD" />
+      <column name="is_del"/>
+      <column name="uidC"/>
+    </updatevalue>
+    </op>
+  </request>
+
+  <request ID="135">
+    <reqNo value="0x0001409D"/>    <!--ABS_DAS_QUERY_CLOUD_MSG 拉云消息接口-->
+    <instance value="tidb_nxim_cloud_msg"/>
+    <db value="dbwwwnxcom_amonlinemsg"/>
+    <table value="t_user_online_msg"/>
+    <splitcolumn value="dst_uid"/>
+    <splitvalue value="128"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="dst_uid"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="src_uid"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="timestamp"/>
+          <rel value="1"/>
+        </column>
+      </condition>
+    <queryresult>
+      <column>
+          <name value="msg_id"/>
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="client_msg_id"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="dst_uid"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="src_uid"/>
+          <type value="4"/>
+      </column>
+       <column>
+          <name value="from_uid"/>
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="timestamp" />
+          <type value="4"/>
+      </column>
+      <column>
+          <name value="msg_len" />
+          <type value="3"/>
+      </column>
+      <column>
+          <name value="msg_str" />
+          <type value="7"/>
+      </column>
+       <column>
+          <name value="uidC" />
+          <type value="4"/>
+      </column>
+    </queryresult>
+    <sort>
+     <column>
+       <name value="timestamp"/>
+       <type value="ASC"/>
+     </column>
+    </sort>    
+    </op>
+  </request>
+
+  <request ID="136">
+    <reqNo value="0x0001409E"/>  <!-- ABS_DAS_CLEAR_UNREAD_TIDB -->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="3">  <!-- update -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+        </column>
+      </condition>
+      <updatevalue>
+        <column name="uidC"/>
+      </updatevalue>
+    </op>
+  </request>
+
+   <!--tidb获取用户最近未读消息计数  弃用-->
+  <request ID="80">
+    <reqNo value="0x0001409F"/> <!--ABS_DAS_GET_LAST_UNREAD_CONTACTS-->
+    <instance value="tidb_nxim_contact"/>
+    <db value="tdb_im_contact"/>
+    <table value="t_user_contact"/>
+    <op value="1">  <!-- query -->
+      <condition>
+        <column>
+          <name value="uidA"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="timestamp"/>
+           <rel value="1"/>
+        </column>
+        <column>
+          <name value="uidB"/>
+          <rel value="1"/>
+        </column>
+        <column>
+          <name value="is_del"/>
+          <rel value="1"/>
+        </column>
+         <column>
+          <name value="unread_count"/>
+        </column>  
+      </condition>
+      <queryresult>
+        <column>
+           <name value="uidB" />
+           <type value="4" />
+        </column>
+        <column>
+          <name value="unread_count" />
+          <type value="3" />        
+        </column>
+      </queryresult>
+      <sort>
+      <column>
+        <name value="timestamp"/>
+        <type value="DESC"/>
+      </column>
+      </sort>
+    </op>
+  </request>
+
+</requests>

@@ -1,0 +1,46 @@
+2024-05-02 19:13:59.778863+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "CREATE TABLE `t_user_contact`\000a(\000a    `id`           bigint NOT NULL AUTO_INCREMENT,\000a    `uidA`         bigint NOT NULL,\000a    `uidB`         bigint NOT NULL,\000a    `msg_type`     int    NOT NULL,\000a    `msg_direction` tinyint NOT NULL,\000a    `client_msg_id`  bigint NOT NULL,\000a    `msg_timestamp`  bigint  NOT NULL,\000a    `msg_content`    varchar(1024)  NOT NULL,\000a    `unread_count`  int     NOT NULL DEFAULT 0,\000a    `read_time`     bigint   NOT NULL DEFAULT 0,\000a    `is_del`        tinyint  NOT NULL DEFAULT 0\000a    PRIMARY KEY [*](`id`) \000a)"; expected "HASH, CONSTRAINT, COMMENT, UNIQUE, NOT NULL, CHECK, REFERENCES, ,, )"; SQL statement:
+CREATE TABLE `t_user_contact`
+(
+    `id`           bigint NOT NULL AUTO_INCREMENT,
+    `uidA`         bigint NOT NULL,
+    `uidB`         bigint NOT NULL,
+    `msg_type`     int    NOT NULL,
+    `msg_direction` tinyint NOT NULL,
+    `client_msg_id`  bigint NOT NULL,
+    `msg_timestamp`  bigint  NOT NULL,
+    `msg_content`    varchar(1024)  NOT NULL,
+    `unread_count`  int     NOT NULL DEFAULT 0,
+    `read_time`     bigint   NOT NULL DEFAULT 0,
+    `is_del`        tinyint  NOT NULL DEFAULT 0
+    PRIMARY KEY (`id`) 
+) [42001-224]
+2024-05-02 19:15:19.889214+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Column count does not match; SQL statement:
+insert into t_user_contact (uidA,uidB,msg_type,msg_direction,client_msg_id,msg_timestamp,msg_content) values(?,?,?,?,?,?) [21002-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:514)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.message.DbException.get(DbException.java:199)
+	at org.h2.message.DbException.get(DbException.java:188)
+	at org.h2.command.dml.Insert.doPrepare(Insert.java:295)
+	at org.h2.command.dml.DataChangeStatement.prepare(DataChangeStatement.java:37)
+	at org.h2.command.Parser.prepareCommand(Parser.java:489)
+	at org.h2.engine.SessionLocal.prepareLocal(SessionLocal.java:639)
+	at org.h2.engine.SessionLocal.prepareCommand(SessionLocal.java:559)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1166)
+	at org.h2.jdbc.JdbcPreparedStatement.<init>(JdbcPreparedStatement.java:93)
+	at org.h2.jdbc.JdbcConnection.prepareStatement(JdbcConnection.java:689)
+	at com.zaxxer.hikari.pool.ProxyConnection.prepareStatement(ProxyConnection.java:351)
+	at com.zaxxer.hikari.pool.HikariProxyConnection.prepareStatement(HikariProxyConnection.java)
+	at org.jdbi.v3.core.statement.DefaultStatementBuilder.create(DefaultStatementBuilder.java:57)
+	at org.jdbi.v3.core.statement.SqlStatement.internalExecute(SqlStatement.java:1540)
+	at org.jdbi.v3.core.result.ResultProducers.lambda$returningUpdateCount$0(ResultProducers.java:48)
+	at org.jdbi.v3.core.statement.Update.execute(Update.java:53)
+	at org.jdbi.v3.core.statement.Update.execute(Update.java:41)
+	at com.bin.im.server.repositories.config.SqlDbConfig.lambda$main$1(SqlDbConfig.java:89)
+	at org.jdbi.v3.core.Jdbi.withHandle(Jdbi.java:330)
+	at com.bin.im.server.repositories.config.SqlDbConfig.main(SqlDbConfig.java:85)
+2024-05-02 19:29:46.034728+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "select uidB,client_msg_id clientMsgId,msg_timestamp msgTimestamp,unread_count unreadCount,msg_direction msgDirection,msg_type msgType [*]msgContent from t_user_contact where uidA=? and uidB in (?,?) "; SQL statement:
+select uidB,client_msg_id clientMsgId,msg_timestamp msgTimestamp,unread_count unreadCount,msg_direction msgDirection,msg_type msgType msgContent from t_user_contact where uidA=? and uidB in (?,?)  [42000-224]

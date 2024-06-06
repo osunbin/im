@@ -1,0 +1,1 @@
+ServerContextFilter=com.bin.im.server.spi.invoker.ServerContextFilter
